@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldOS: Enterprise Sentinel Node</title>
+    <title>WorldOS: Nexus Prime | Sovereign Data Exchange</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,305 +11,537 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
+        /* --- THEME: DEEP CYBER-FINANCE --- */
         :root {
-            /* Enterprise Security Palette: Deep Navy, Gold (Audit), and Emerald (Safe) */
-            --bg-dark: #0f172a;
-            --panel: #1e293b;
-            --border: #334155;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent: #f59e0b; /* Amber for "Security Alert" aesthetics */
-            --safe: #10b981;
-            --danger: #ef4444;
+            --bg-deep: #020617;     /* Slate 950 */
+            --bg-panel: #0f172a;    /* Slate 900 */
+            --border: #1e293b;      /* Slate 800 */
+            --primary: #f8fafc;     /* Slate 50 */
+            --secondary: #94a3b8;   /* Slate 400 */
+            
+            /* FUNCTIONAL COLORS */
+            --accent: #06b6d4;      /* Cyan 500 (Tech/Neural) */
+            --safe: #10b981;        /* Emerald 500 (Compliance/Yield) */
+            --warn: #f59e0b;        /* Amber 500 (Alerts/PII) */
+            --danger: #ef4444;      /* Red 500 (Breach) */
         }
-        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; }
+
+        body { background-color: var(--bg-deep); color: var(--primary); font-family: 'Inter', sans-serif; overflow: hidden; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        .panel { background-color: var(--panel); border: 1px solid var(--border); }
-        .input-dark { background-color: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); }
-        .input-dark:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 1px var(--accent); }
-        
-        .redacted { background-color: var(--text-main); color: var(--text-main); border-radius: 2px; user-select: none; }
-        .redacted:hover { background-color: var(--text-muted); color: var(--bg-dark); cursor: help; }
 
+        /* UI COMPONENTS */
+        .panel { background-color: var(--bg-panel); border: 1px solid var(--border); transition: all 0.2s; }
+        .panel:hover { border-color: var(--secondary); }
+        
+        .btn-primary { background-color: var(--accent); color: #fff; transition: all 0.2s; }
+        .btn-primary:hover { background-color: #0891b2; box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+
+        .btn-safe { background-color: var(--safe); color: #fff; transition: all 0.2s; }
+        .btn-safe:hover { background-color: #059669; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+
+        /* ANIMATIONS */
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* DATA TABLE */
+        .data-table th { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); color: var(--secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .data-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .data-table tr:hover { background-color: rgba(255,255,255,0.02); }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
     </style>
+</head>
+<body class="flex h-screen">
 
-    <script type="module">
-        // Minimal Firebase Imports
-        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, query, addDoc, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    <aside class="w-64 bg-panel border-r border-border flex flex-col shrink-0 z-20">
+        <div class="h-16 flex items-center px-6 border-b border-border gap-3">
+            <div class="w-8 h-8 rounded bg-accent/10 flex items-center justify-center text-accent">
+                <i data-feather="aperture" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight leading-none">NEXUS<span class="text-accent">PRIME</span></h1>
+                <p class="text-[10px] text-secondary font-mono tracking-widest mt-1">WORLD.OS // VER 3.0</p>
+            </div>
+        </div>
 
-        // CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSy_dummy-api-key", authDomain: "dummy.firebaseapp.com", projectId: "dummy-project",
-            storageBucket: "dummy.appspot.com", messagingSenderId: "123", appId: "1:123:web:abc"
-        };
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="App.nav('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-secondary hover:text-primary hover:bg-white/5 transition-colors active">
+                <i data-feather="grid" class="w-4 h-4"></i> Overview
+            </button>
+            <button onclick="App.nav('sentinel')" id="nav-sentinel" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-secondary hover:text-primary hover:bg-white/5 transition-colors">
+                <i data-feather="shield" class="w-4 h-4 text-warn"></i> Sentinel (Scrubber)
+            </button>
+            <button onclick="App.nav('vault')" id="nav-vault" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-secondary hover:text-primary hover:bg-white/5 transition-colors">
+                <i data-feather="database" class="w-4 h-4 text-accent"></i> Asset Vault
+            </button>
+            <button onclick="App.nav('market')" id="nav-market" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-secondary hover:text-primary hover:bg-white/5 transition-colors">
+                <i data-feather="trending-up" class="w-4 h-4 text-safe"></i> Capital Markets
+            </button>
+            <button onclick="App.nav('ledger')" id="nav-ledger" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-secondary hover:text-primary hover:bg-white/5 transition-colors">
+                <i data-feather="list" class="w-4 h-4"></i> Global Ledger
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-border">
+            <div class="panel p-3 rounded-lg bg-bg-deep/50 cursor-pointer hover:border-accent group" onclick="App.toggleUser()">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-mono text-secondary uppercase">Current Mode</span>
+                    <i data-feather="refresh-cw" class="w-3 h-3 text-secondary group-hover:text-accent group-hover:animate-spin"></i>
+                </div>
+                <div class="font-bold text-sm flex items-center gap-2" id="user-mode-display">
+                    <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div> Individual
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col relative overflow-hidden">
         
-        // GLOBAL STATE
-        let db; 
-        const userId = 'ENT_ADMIN_001';
-        let secureVault = []; // Local-only storage for demo
+        <header class="h-16 border-b border-border bg-panel/80 backdrop-blur flex items-center justify-between px-8 shrink-0 z-10">
+            <div class="flex items-center gap-4 text-sm font-mono text-secondary">
+                <span id="breadcrumb">SYSTEM // DASHBOARD</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-secondary uppercase font-bold">Total Network Value</span>
+                    <span class="text-accent font-mono font-bold" id="header-tnv">$0.00</span>
+                </div>
+                <div class="h-8 w-px bg-border"></div>
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-secondary uppercase font-bold">Compliance Rate</span>
+                    <span class="text-safe font-mono font-bold">99.9%</span>
+                </div>
+            </div>
+        </header>
 
-        // --- 1. THE 100K LOGIC: PII SCRUBBER ---
-        const Sentinel = {
-            patterns: {
-                email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
-                ssn: /\d{3}-\d{2}-\d{4}/g,
-                creditCard: /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/g,
-                currency: /\$\d{1,3}(,\d{3})*(\.\d{2})?/g,
-                phone: /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g
-            },
+        <div class="flex-1 relative overflow-y-auto bg-bg-deep p-8" id="view-container">
+            
+            <div id="view-dashboard" class="view-section fade-in space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="panel rounded-xl p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5"><i data-feather="shield" class="w-24 h-24"></i></div>
+                        <p class="text-secondary text-xs font-mono uppercase tracking-widest mb-2">PII Entities Blocked</p>
+                        <h3 class="text-4xl font-bold text-primary" id="dash-pii">0</h3>
+                        <p class="text-xs text-warn mt-2">+ Security Protocol Active</p>
+                    </div>
+                    <div class="panel rounded-xl p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5"><i data-feather="database" class="w-24 h-24"></i></div>
+                        <p class="text-secondary text-xs font-mono uppercase tracking-widest mb-2">Assets Under Management</p>
+                        <h3 class="text-4xl font-bold text-primary" id="dash-assets">0</h3>
+                        <p class="text-xs text-accent mt-2">Verified Clean Data</p>
+                    </div>
+                    <div class="panel rounded-xl p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-5"><i data-feather="dollar-sign" class="w-24 h-24"></i></div>
+                        <p class="text-secondary text-xs font-mono uppercase tracking-widest mb-2">My Yield Generated</p>
+                        <h3 class="text-4xl font-bold text-safe font-mono" id="dash-yield">$0.00</h3>
+                        <p class="text-xs text-secondary mt-2">Royalties from Fund Usage</p>
+                    </div>
+                </div>
 
-            // The Core Value Function: Returns { original, clean, redactionCount }
-            sanitize: async (text) => {
-                let cleanText = text;
-                let totalRedactions = 0;
-                let riskScore = 0;
+                <div class="panel rounded-xl p-6">
+                    <h3 class="font-bold text-lg mb-4">Network Traffic & Value Verification</h3>
+                    <div class="h-64 w-full">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
-                // Simulate processing delay for "Analysis"
-                await new Promise(r => setTimeout(r, 800));
+            <div id="view-sentinel" class="view-section fade-in hidden h-full flex flex-col">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-primary mb-2">Sentinel Gate</h2>
+                    <p class="text-secondary max-w-xl mx-auto">Upload raw documents. The local neural engine will identify, redact, and hash sensitive PII before it ever touches the vault.</p>
+                </div>
 
-                for (const [type, regex] of Object.entries(Sentinel.patterns)) {
-                    const matches = text.match(regex);
-                    if (matches) {
-                        totalRedactions += matches.length;
-                        riskScore += (matches.length * (type === 'ssn' || type === 'creditCard' ? 10 : 2)); // Weighted risk
-                        cleanText = cleanText.replace(regex, `[REDACTED_${type.toUpperCase()}]`);
-                    }
-                }
+                <div class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl bg-bg-panel/30 hover:bg-bg-panel/50 transition-colors relative group" id="drop-zone">
+                    <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="Sentinel.process(this)">
+                    <div class="text-center pointer-events-none group-hover:scale-105 transition-transform">
+                        <div class="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-feather="upload-cloud" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-primary">Drop Data Payload</h3>
+                        <p class="text-sm text-secondary mt-2">Supports CSV, JSON, TXT, PDF (Text)</p>
+                    </div>
+                </div>
 
-                return {
-                    original: text,
-                    clean: cleanText,
-                    stats: {
-                        redactions: totalRedactions,
-                        riskScore: Math.min(100, riskScore),
-                        complianceStatus: riskScore > 0 ? 'SANITIZED' : 'CLEAN'
-                    }
-                };
-            }
+                <div id="processing-log" class="mt-6 h-48 overflow-y-auto font-mono text-xs text-secondary panel p-4 rounded-lg hidden">
+                    </div>
+            </div>
+
+            <div id="view-vault" class="view-section fade-in hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Sovereign Asset Vault</h2>
+                    <div class="flex gap-2">
+                        <button onclick="App.nav('sentinel')" class="btn-primary px-4 py-2 rounded text-sm font-bold flex items-center gap-2">
+                            <i data-feather="plus"></i> Ingest New Asset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel rounded-xl overflow-hidden">
+                    <table class="w-full data-table">
+                        <thead class="bg-bg-deep">
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Category</th>
+                                <th>Compliance Status</th>
+                                <th>PoU Score</th>
+                                <th>Market Value</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vault-list">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-market" class="view-section fade-in hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold">Capital Markets</h2>
+                        <p class="text-secondary text-sm">Allocated clean assets to high-yield thematic funds.</p>
+                    </div>
+                    <div id="enterprise-controls" class="hidden">
+                        <button onclick="Market.simulateB2B()" class="btn-safe px-6 py-2 rounded text-sm font-bold shadow-lg shadow-safe/20">
+                            <i data-feather="briefcase" class="w-4 h-4 inline mr-2"></i> Enterprise Buy (Simulate)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="fund-grid">
+                    </div>
+            </div>
+
+            <div id="view-ledger" class="view-section fade-in hidden">
+                <h2 class="text-2xl font-bold mb-6">Immutable Ledger</h2>
+                <div class="panel rounded-xl overflow-hidden">
+                    <div id="ledger-content" class="divide-y divide-border">
+                        </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- 1. CORE CONFIG & STATE ---
+        const State = {
+            mode: 'individual', // or 'enterprise'
+            assets: [],
+            funds: [
+                { id: 'f_fin', name: 'Alpha Finance Stream', cat: 'Finance', yield: 12.4, color: 'text-emerald-400' },
+                { id: 'f_mob', name: 'Urban Mobility Aggregator', cat: 'Mobility', yield: 8.1, color: 'text-blue-400' },
+                { id: 'f_hlth', name: 'MedLink Wellness Data', cat: 'Health', yield: 15.2, color: 'text-rose-400' }
+            ],
+            ledger: [],
+            stats: { piiBlocked: 0, totalYield: 0, totalValue: 0 }
         };
 
-        const App = window.App = {
-            init: async () => {
-                try {
-                    const app = firebase.initializeApp(firebaseConfig);
-                    db = firebase.getFirestore(app);
-                    App.renderDashboard();
-                } catch(e) { console.log("Firebase Simulated Mode"); }
-                feather.replace();
-            },
+        const Patterns = {
+            email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+            phone: /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g,
+            ssn: /\d{3}-\d{2}-\d{4}/g,
+            currency: /\$\d{1,3}(,\d{3})*(\.\d{2})?/g
+        };
 
-            ingestFile: async (input) => {
+        // --- 2. SENTINEL ENGINE (CLEANING) ---
+        const Sentinel = {
+            process: async (input) => {
                 const file = input.files[0];
                 if (!file) return;
 
-                // UI Feedback
-                const btn = document.getElementById('upload-btn');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = `<i data-feather="loader" class="animate-spin w-4 h-4 mr-2"></i> Scrubbing PII...`;
-                feather.replace();
-
+                const logEl = document.getElementById('processing-log');
+                logEl.classList.remove('hidden');
+                logEl.innerHTML = `> INIT_SEQUENCE: Receiving ${file.name} (${(file.size/1024).toFixed(2)}KB)...<br>`;
+                
+                // Simulate Read
                 const text = await file.text();
                 
-                // RUN THE SENTINEL ENGINE
-                const result = await Sentinel.sanitize(text);
+                // 1. ANALYSIS STEP
+                await Sentinel.delay(500);
+                logEl.innerHTML += `> ANALYSIS: Scanning for PII vectors...<br>`;
                 
-                const assetId = crypto.randomUUID().split('-')[0];
-                const timestamp = new Date().toISOString();
+                let cleanText = text;
+                let piiCount = 0;
+                let riskScore = 0;
 
+                for (const [type, regex] of Object.entries(Patterns)) {
+                    const matches = text.match(regex);
+                    if (matches) {
+                        piiCount += matches.length;
+                        riskScore += matches.length * 5;
+                        cleanText = cleanText.replace(regex, `[REDACTED_${type.toUpperCase()}]`);
+                        logEl.innerHTML += `> WARN: Found ${matches.length} instances of ${type.toUpperCase()}. Redacting...<br>`;
+                    }
+                }
+
+                // 2. VALUATION STEP (PoU)
+                await Sentinel.delay(500);
+                logEl.innerHTML += `> PoU_ENGINE: Calculating utility scores...<br>`;
+                
+                const baseValue = (file.size / 1024) * 0.10; // 10 cents per KB
+                const complianceBonus = riskScore > 0 ? 1.5 : 1.0; // Cleaned data is worth more
+                const finalValue = (baseValue * complianceBonus).toFixed(2);
+                const pouScore = Math.min(100, Math.floor((file.size / 500) * 10) + 50);
+
+                // 3. STORAGE STEP
                 const asset = {
-                    id: assetId,
+                    id: crypto.randomUUID().split('-')[0],
                     name: file.name,
-                    size: (file.size/1024).toFixed(2),
-                    ...result,
-                    timestamp
+                    category: Sentinel.guessCategory(text, file.name),
+                    originalSize: file.size,
+                    piiRemoved: piiCount,
+                    cleanText: cleanText.substring(0, 100) + "...", // Preview
+                    value: parseFloat(finalValue),
+                    pou: pouScore,
+                    allocated: false,
+                    timestamp: new Date()
                 };
 
-                secureVault.unshift(asset);
+                State.assets.unshift(asset);
+                State.stats.piiBlocked += piiCount;
+                State.stats.totalValue += parseFloat(finalValue);
+                State.ledger.unshift({ type: 'INGEST', msg: `Securely scrubbed ${file.name}. Blocked ${piiCount} PII tokens.`, time: new Date() });
+
+                logEl.innerHTML += `> SUCCESS: Asset vaulted. Value: $${finalValue}. Compliance: GDPR_READY.<br>`;
                 
-                // Reset UI
-                btn.innerHTML = originalText;
-                feather.replace();
-                input.value = '';
+                Sentinel.updateUI();
+                input.value = ''; // Reset
+            },
 
-                // Log to Audit Trail
-                App.logAudit(asset);
-                App.renderDashboard();
+            guessCategory: (text, name) => {
+                const lower = (text + name).toLowerCase();
+                if (lower.includes('bank') || lower.includes('statement') || lower.includes('tax')) return 'Finance';
+                if (lower.includes('uber') || lower.includes('lyft') || lower.includes('map')) return 'Mobility';
+                if (lower.includes('health') || lower.includes('doctor') || lower.includes('step')) return 'Health';
+                return 'General';
+            },
+
+            delay: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
+
+            updateUI: () => {
+                document.getElementById('dash-pii').innerText = State.stats.piiBlocked;
+                document.getElementById('dash-assets').innerText = State.assets.length;
+                document.getElementById('header-tnv').innerText = `$${State.stats.totalValue.toFixed(2)}`;
                 App.renderVault();
+                App.renderLedger();
+            }
+        };
+
+        // --- 3. MARKET ENGINE ---
+        const Market = {
+            renderFunds: () => {
+                const container = document.getElementById('fund-grid');
+                container.innerHTML = '';
+                State.funds.forEach(fund => {
+                    const myAllocation = State.assets.filter(a => a.allocated === fund.id).length;
+                    const btnClass = State.mode === 'enterprise' ? 'bg-safe hover:bg-emerald-600' : (myAllocation > 0 ? 'bg-red-500 hover:bg-red-600' : 'bg-accent hover:bg-cyan-600');
+                    const btnText = State.mode === 'enterprise' ? 'BUY BUNDLE' : (myAllocation > 0 ? 'DE-ALLOCATE' : 'ALLOCATE ASSETS');
+                    const action = State.mode === 'enterprise' ? `Market.simulateB2B()` : `Market.toggleAllocation('${fund.id}', '${fund.cat}')`;
+
+                    container.innerHTML += `
+                        <div class="panel rounded-xl p-6 flex flex-col justify-between hover:border-accent transition-colors relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><i data-feather="pie-chart" class="w-24 h-24"></i></div>
+                            <div>
+                                <span class="text-xs font-mono uppercase border border-border px-2 py-1 rounded text-secondary">${fund.cat}</span>
+                                <h3 class="text-xl font-bold mt-3 text-primary">${fund.name}</h3>
+                                <div class="mt-4 flex items-end gap-2">
+                                    <span class="text-4xl font-mono font-bold ${fund.color}">${fund.yield}%</span>
+                                    <span class="text-xs text-secondary mb-1">APY Yield</span>
+                                </div>
+                                <p class="text-sm text-secondary mt-2">Aggregated clean streams. Enterprise grade compliance.</p>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-border flex justify-between items-center">
+                                <span class="text-xs text-secondary font-mono">Allocated: ${myAllocation} Assets</span>
+                                <button onclick="${action}" class="${btnClass} text-white px-4 py-2 rounded text-xs font-bold transition-all shadow-lg">
+                                    ${btnText}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                feather.replace();
             },
 
-            logAudit: (asset) => {
-                const logs = document.getElementById('audit-log');
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center p-3 border-b border-border text-xs font-mono fade-in";
-                div.innerHTML = `
-                    <div>
-                        <span class="text-accent font-bold">REQ_${asset.id}</span>
-                        <span class="text-muted ml-2">Ingest & Sanitize</span>
-                    </div>
-                    <div class="text-right">
-                        <span class="${asset.stats.riskScore > 0 ? 'text-safe' : 'text-muted'}">
-                            ${asset.stats.riskScore > 0 ? `BLOCKED ${asset.stats.redactions} PII TOKENS` : 'NO THREATS FOUND'}
-                        </span>
-                    </div>
-                `;
-                logs.prepend(div);
+            toggleAllocation: (fundId, cat) => {
+                // Find eligible unallocated assets
+                const eligible = State.assets.filter(a => a.category === cat && a.allocated === false);
+                
+                // If already allocated, de-allocate
+                const allocated = State.assets.filter(a => a.allocated === fundId);
+                
+                if (allocated.length > 0) {
+                    State.assets.forEach(a => { if (a.allocated === fundId) a.allocated = false; });
+                    State.ledger.unshift({ type: 'EXIT', msg: `Withdrew ${allocated.length} assets from ${fundId}.`, time: new Date() });
+                    alert(`Withdrew ${allocated.length} assets.`);
+                } else if (eligible.length > 0) {
+                    State.assets.forEach(a => { if (a.category === cat && !a.allocated) a.allocated = fundId; });
+                    State.ledger.unshift({ type: 'INVEST', msg: `Allocated ${eligible.length} assets to ${fundId}.`, time: new Date() });
+                    alert(`Success! ${eligible.length} assets are now earning yield.`);
+                } else {
+                    alert('No free assets match this fund category. Upload more data via Sentinel.');
+                }
+                Market.renderFunds();
+                App.renderVault();
+                App.renderLedger();
             },
 
-            renderDashboard: () => {
-                // Calculate Stats
-                const totalFiles = secureVault.length;
-                const totalRedactions = secureVault.reduce((acc, cur) => acc + cur.stats.redactions, 0);
-                const preventedFines = (totalRedactions * 2500).toLocaleString(); // $2500 per GDPR violation
+            simulateB2B: () => {
+                if (State.mode !== 'enterprise') return;
+                
+                // Count total assets in funds
+                const assetsInFunds = State.assets.filter(a => a.allocated !== false).length;
+                if (assetsInFunds === 0) return alert("No assets in funds to buy.");
 
-                document.getElementById('stat-redactions').innerText = totalRedactions;
-                document.getElementById('stat-fines').innerText = `$${preventedFines}`;
-                document.getElementById('stat-files').innerText = totalFiles;
+                const purchaseAmount = assetsInFunds * 5.50; // Enterprise pays $5.50 per asset
+                const yieldShare = purchaseAmount * 0.80; // User gets 80%
+
+                State.stats.totalYield += yieldShare;
+                State.ledger.unshift({ type: 'SALE', msg: `ENTERPRISE PURCHASE: Bundle ID #${crypto.randomUUID().split('-')[0]}. Paid out $${yieldShare.toFixed(2)} to Sovereign Owner.`, time: new Date() });
+
+                document.getElementById('dash-yield').innerText = `$${State.stats.totalYield.toFixed(2)}`;
+                
+                // Visual feedback
+                const btn = document.querySelector('#enterprise-controls button');
+                const oldText = btn.innerHTML;
+                btn.innerHTML = `<i data-feather="check"></i> Purchased!`;
+                btn.classList.add('bg-white', 'text-black');
+                setTimeout(() => {
+                    btn.innerHTML = oldText;
+                    btn.classList.remove('bg-white', 'text-black');
+                    feather.replace();
+                }, 1000);
+                
+                App.renderLedger();
+            }
+        };
+
+        // --- 4. APP LOGIC ---
+        const App = {
+            init: () => {
+                feather.replace();
+                App.initChart();
+                Market.renderFunds();
+                App.renderLedger();
+                App.renderVault(); // Empty initially
+            },
+
+            nav: (viewId) => {
+                // Hide all
+                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'text-primary', 'bg-white/5'));
+                
+                // Show target
+                document.getElementById(`view-${viewId}`).classList.remove('hidden');
+                document.getElementById(`nav-${viewId}`).classList.add('active', 'text-primary', 'bg-white/5');
+                
+                // Breadcrumb
+                document.getElementById('breadcrumb').innerText = `SYSTEM // ${viewId.toUpperCase()}`;
+            },
+
+            toggleUser: () => {
+                if (State.mode === 'individual') {
+                    State.mode = 'enterprise';
+                    document.getElementById('user-mode-display').innerHTML = `<div class="w-2 h-2 rounded-full bg-safe animate-pulse"></div> Enterprise`;
+                    document.getElementById('enterprise-controls').classList.remove('hidden');
+                    alert("SWITCHING CONTEXT: Enterprise Data Buyer Mode Enabled.\nYou can now purchase compliant data bundles.");
+                } else {
+                    State.mode = 'individual';
+                    document.getElementById('user-mode-display').innerHTML = `<div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div> Individual`;
+                    document.getElementById('enterprise-controls').classList.add('hidden');
+                }
+                Market.renderFunds();
             },
 
             renderVault: () => {
-                const container = document.getElementById('vault-grid');
+                const tbody = document.getElementById('vault-list');
+                tbody.innerHTML = '';
+                if (State.assets.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Vault is empty. Go to Sentinel to ingest data.</td></tr>`;
+                    return;
+                }
+                State.assets.forEach(a => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="font-medium text-primary">${a.name}</td>
+                            <td><span class="text-xs border border-border px-2 py-1 rounded text-secondary">${a.category}</span></td>
+                            <td><span class="text-xs bg-safe/10 text-safe px-2 py-1 rounded">GDPR Compliant</span></td>
+                            <td><span class="font-mono text-accent">${a.pou}/100</span></td>
+                            <td class="font-mono text-primary">$${a.value.toFixed(2)}</td>
+                            <td>
+                                ${a.allocated ? `<span class="text-xs font-bold text-safe">ALLOCATED (${a.allocated})</span>` : `<span class="text-xs text-secondary">Idle</span>`}
+                            </td>
+                        </tr>
+                    `;
+                });
+            },
+
+            renderLedger: () => {
+                const container = document.getElementById('ledger-content');
+                if (State.ledger.length === 0) {
+                    container.innerHTML = `<div class="p-6 text-center text-secondary">No transactions recorded.</div>`;
+                    return;
+                }
                 container.innerHTML = '';
+                State.ledger.forEach(tx => {
+                    let color = 'text-primary';
+                    if (tx.type === 'INGEST') color = 'text-accent';
+                    if (tx.type === 'SALE') color = 'text-safe';
+                    if (tx.type === 'WARN') color = 'text-warn';
 
-                secureVault.forEach(asset => {
-                    const card = document.createElement('div');
-                    card.className = "panel rounded-lg p-5 fade-in";
-                    
-                    // Show raw snippet vs clean snippet logic
-                    const snippet = asset.clean.substring(0, 150) + "...";
-                    
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-4">
+                    container.innerHTML += `
+                        <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
                             <div>
-                                <h3 class="font-bold text-sm text-text-main flex items-center gap-2">
-                                    <i data-feather="file-text" class="w-4 h-4 text-muted"></i> ${asset.name}
-                                </h3>
-                                <div class="mt-1 text-xs font-mono text-muted">ID: ${asset.id} • ${asset.size}KB</div>
+                                <span class="text-[10px] font-bold ${color} border border-border px-1 rounded mr-2">${tx.type}</span>
+                                <span class="text-sm text-secondary font-mono">${tx.msg}</span>
                             </div>
-                            <div class="text-right">
-                                <div class="text-xs font-bold ${asset.stats.riskScore > 50 ? 'text-danger' : 'text-safe'} px-2 py-1 rounded bg-bg-dark border border-border">
-                                    RISK: ${asset.stats.riskScore}/100
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-bg-dark p-3 rounded border border-border mb-4">
-                            <div class="text-[10px] uppercase text-muted mb-1 font-bold tracking-wider">Sanitized Preview (Safe for LLM)</div>
-                            <p class="text-xs font-mono text-text-muted leading-relaxed break-all">${snippet}</p>
-                        </div>
-
-                        <div class="flex justify-between items-center pt-3 border-t border-border">
-                            <div class="flex gap-4 text-xs font-mono">
-                                <span class="text-accent flex items-center gap-1"><i data-feather="shield" class="w-3 h-3"></i> ${asset.stats.redactions} Redacted</span>
-                                <span class="text-safe flex items-center gap-1"><i data-feather="check-circle" class="w-3 h-3"></i> GDPR Ready</span>
-                            </div>
-                            <button class="text-xs bg-safe/10 text-safe hover:bg-safe/20 px-3 py-1.5 rounded transition-colors font-medium border border-safe/20">
-                                Export Clean JSON
-                            </button>
+                            <span class="text-xs text-secondary opacity-50 font-mono">${tx.time.toLocaleTimeString()}</span>
                         </div>
                     `;
-                    container.appendChild(card);
                 });
-                feather.replace();
+            },
+
+            initChart: () => {
+                const ctx = document.getElementById('mainChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Asset Value ($)',
+                            data: [12, 19, 15, 25, 22, 30, 45],
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Compliance Score',
+                            data: [98, 99, 98, 100, 100, 100, 100],
+                            borderColor: '#10b981',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, labels: { color: '#94a3b8' } } },
+                        scales: {
+                            y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
             }
         };
 
         window.onload = App.init;
     </script>
-</head>
-<body class="flex flex-col h-screen overflow-hidden">
-
-    <nav class="h-16 border-b border-border bg-panel flex items-center justify-between px-6 shrink-0 z-20">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-accent/20 rounded flex items-center justify-center text-accent">
-                <i data-feather="hexagon" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-lg tracking-tight">WorldOS <span class="text-accent">SENTINEL</span></h1>
-                <p class="text-[10px] text-muted font-mono tracking-widest uppercase">Enterprise Data Governance Gateway</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-4 text-xs font-mono">
-            <div class="flex items-center gap-2 text-safe">
-                <span class="w-2 h-2 bg-safe rounded-full animate-pulse"></span> SYSTEM SECURE
-            </div>
-            <div class="px-3 py-1.5 rounded bg-bg-dark border border-border text-muted">
-                ORG: ACME_CORP_GLOBAL
-            </div>
-        </div>
-    </nav>
-
-    <div class="flex flex-1 overflow-hidden">
-        
-        <aside class="w-64 bg-bg-dark border-r border-border flex flex-col p-4 space-y-6 shrink-0">
-            <div>
-                <h3 class="text-xs font-bold text-muted uppercase tracking-wider mb-3">Governance</h3>
-                <nav class="space-y-1">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded bg-panel border border-border text-sm font-medium text-accent">
-                        <i data-feather="shield" class="w-4 h-4"></i> Data Sanitizer
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded text-muted hover:text-text-main text-sm font-medium transition-colors">
-                        <i data-feather="activity" class="w-4 h-4"></i> Leakage Monitor
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded text-muted hover:text-text-main text-sm font-medium transition-colors">
-                        <i data-feather="lock" class="w-4 h-4"></i> Vault Keys
-                    </a>
-                </nav>
-            </div>
-
-            <div class="flex-1 bg-panel rounded border border-border p-4 overflow-hidden flex flex-col">
-                <h3 class="text-xs font-bold text-muted uppercase tracking-wider mb-3">Live Audit Log</h3>
-                <div class="flex-1 overflow-y-auto space-y-0" id="audit-log">
-                    </div>
-            </div>
-        </aside>
-
-        <main class="flex-1 bg-bg-dark p-8 overflow-y-auto">
-            
-            <div class="grid grid-cols-3 gap-6 mb-8">
-                <div class="panel p-6 rounded-lg shadow-lg relative overflow-hidden group">
-                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <i data-feather="eye-off" class="w-16 h-16 text-accent"></i>
-                    </div>
-                    <div class="text-xs text-muted font-mono uppercase">PII Entities Redacted</div>
-                    <div class="text-4xl font-bold mt-2 text-accent" id="stat-redactions">0</div>
-                    <div class="text-xs text-muted mt-2">Sensitive tokens blocked from LLM</div>
-                </div>
-                
-                <div class="panel p-6 rounded-lg shadow-lg relative overflow-hidden">
-                    <div class="text-xs text-muted font-mono uppercase">Est. Liability Prevented</div>
-                    <div class="text-4xl font-bold mt-2 text-safe" id="stat-fines">$0</div>
-                    <div class="text-xs text-muted mt-2">Based on GDPR max violation metric</div>
-                </div>
-
-                <div class="panel p-6 rounded-lg shadow-lg flex flex-col justify-center items-center text-center border-dashed border-2 border-border cursor-pointer hover:border-accent hover:bg-panel transition-all">
-                    <label class="cursor-pointer w-full h-full flex flex-col items-center justify-center">
-                        <div id="upload-btn" class="flex items-center gap-2 text-sm font-bold text-text-main mb-1">
-                            <i data-feather="upload-cloud" class="w-4 h-4"></i> Ingest & Scrub Data
-                        </div>
-                        <span class="text-xs text-muted">Supports PDF, TXT, CSV (Local Processing)</span>
-                        <input type="file" class="hidden" onchange="App.ingestFile(this)">
-                    </label>
-                </div>
-            </div>
-
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <i data-feather="database" class="w-5 h-5 text-accent"></i> Sanitized Asset Vault
-            </h2>
-            <div class="grid grid-cols-2 gap-6" id="vault-grid">
-                <div class="col-span-2 py-12 text-center border border-dashed border-border rounded-lg text-muted">
-                    <i data-feather="shield-off" class="w-8 h-8 mx-auto mb-3 opacity-50"></i>
-                    <p class="text-sm">Vault Empty. Upload a document containing PII (emails, phone #, $$) to test the Sanitizer.</p>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
 </body>
 </html>
